@@ -315,26 +315,73 @@ with col_kanan:
     st.plotly_chart(fig, width="stretch")
 
 st.markdown("---")
-st.subheader("🏆 10 Kecamatan dengan Kasus TB Paru Tertinggi")
 
-top10 = df_year.sort_values("jumlah_kasus", ascending=False).head(10)
+tahun_idx = tahun_list.index(selected_year)
+if tahun_idx > 0:
+    tahun_sebelumnya = tahun_list[tahun_idx - 1]
 
-fig_top = px.bar(
-    top10,
-    x="kecamatan",
-    y="jumlah_kasus",
-    text="jumlah_kasus",
-    color="jumlah_kasus",
-    color_continuous_scale=BRAND_COLORS
-)
-fig_top.update_traces(textposition="outside")
-fig_top.update_layout(
-    height=500,
-    coloraxis_showscale=False,
-    xaxis_title="Kecamatan",
-    yaxis_title="Jumlah Kasus"
-)
-st.plotly_chart(fig_top, width="stretch")
+    st.subheader(
+        f"📈 Perubahan Jumlah Kasus per Kecamatan ({tahun_sebelumnya} → {selected_year})"
+    )
+
+    df_prev = df[df["tahun"] == tahun_sebelumnya][["kecamatan", "jumlah_kasus"]].rename(
+        columns={"jumlah_kasus": "kasus_sebelumnya"}
+    )
+    df_curr = df_year[["kecamatan", "jumlah_kasus"]].rename(
+        columns={"jumlah_kasus": "kasus_sekarang"}
+    )
+
+    df_change = df_curr.merge(df_prev, on="kecamatan", how="outer").fillna(0)
+    df_change["kasus_sebelumnya"] = df_change["kasus_sebelumnya"].astype(int)
+    df_change["kasus_sekarang"] = df_change["kasus_sekarang"].astype(int)
+    df_change["perubahan"] = df_change["kasus_sekarang"] - df_change["kasus_sebelumnya"]
+    df_change = df_change.sort_values("perubahan", ascending=True)
+
+    df_change["status"] = df_change["perubahan"].apply(
+        lambda x: "Naik" if x > 0 else ("Turun" if x < 0 else "Tetap")
+    )
+    df_change["label"] = df_change["perubahan"].apply(
+        lambda x: f"+{x}" if x > 0 else str(x)
+    )
+
+    warna_perubahan = {
+        "Naik": "#E63946",
+        "Turun": "#00A896",
+        "Tetap": "#CCCCCC"
+    }
+
+    fig_change = px.bar(
+        df_change,
+        x="perubahan",
+        y="kecamatan",
+        orientation="h",
+        color="status",
+        color_discrete_map=warna_perubahan,
+        text="label",
+        title=f"{tahun_sebelumnya} → {selected_year} | Kota Bandung"
+    )
+
+    fig_change.update_traces(textposition="outside")
+    fig_change.update_layout(
+        height=max(600, len(df_change) * 22),
+        showlegend=False,
+        xaxis_title="Perubahan Jumlah Kasus",
+        yaxis_title="Kecamatan",
+        margin=dict(l=10, r=10, t=60, b=10)
+    )
+    fig_change.add_vline(x=0, line_width=1, line_color="black")
+
+    st.plotly_chart(fig_change, width="stretch")
+
+    st.caption(
+        "🔴 Merah = jumlah kasus naik dibanding tahun sebelumnya &nbsp;|&nbsp; "
+        "🟢 Hijau = jumlah kasus turun dibanding tahun sebelumnya"
+    )
+else:
+    st.info(
+        f"📈 Grafik perubahan kasus tidak tersedia untuk tahun {selected_year} "
+        "karena tidak ada data tahun sebelumnya untuk dibandingkan."
+    )
 
 st.markdown("---")
 st.subheader("📋 Data Kecamatan")
