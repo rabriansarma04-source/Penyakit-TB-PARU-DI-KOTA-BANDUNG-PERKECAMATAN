@@ -22,8 +22,8 @@ st.caption(
 )
 st.markdown("---")
 
-EXCEL_PATH = "data/TB_PARU.xlsx"
-GEOJSON_PATH = "assets/3273-kota-bandung-level-kecamatan.json"
+
+
 
 
 def normalize_nama(nama):
@@ -35,7 +35,7 @@ def normalize_nama(nama):
 
 @st.cache_data
 def load_data():
-    df = pd.read_excel(EXCEL_PATH)
+    df = pd.read_excel("data/TB PARU.xlsx")
     # Kolom ke-2 pada file sumber kosong (header ganda "Kecamatan"), buang.
     df.columns = ["kota", "_kolom_kosong", "kecamatan", "jumlah_kasus", "satuan", "tahun"]
     df = df.drop(columns=["_kolom_kosong"])
@@ -45,7 +45,7 @@ def load_data():
 
 @st.cache_data
 def load_geojson():
-    with open(GEOJSON_PATH, "r", encoding="utf-8") as f:
+    with open("assets/3273-kota-bandung-level-kecamatan.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
 
