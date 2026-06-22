@@ -12,16 +12,61 @@ st.set_page_config(
     page_icon="🫁",
     layout="wide"
 )
+st.markdown("""
+<style>
+.main {
+    background-color: #F4F8FB;
+}
 
-st.title("🫁 Dashboard Pemetaan dan Analisis Spasial")
-st.subheader("Sebaran Kasus Tuberkulosis (TB) Paru Kota Bandung")
+[data-testid="stMetric"] {
+    background-color: white;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+}
+
+h1 {
+    color: #0A4D68;
+    text-align: center;
+}
+
+h2,h3 {
+    color: #0A4D68;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<div style="
+background: linear-gradient(90deg,#0A4D68,#088395);
+padding:25px;
+border-radius:15px;
+color:white;
+text-align:center;
+margin-bottom:20px;">
+<h1>🫁 Dashboard TB Paru Kota Bandung</h1>
+<p>Analisis Spasial dan Visualisasi Data Per Kecamatan</p>
+</div>
+""", unsafe_allow_html=True)
 st.caption(
     "Catatan: jika satu kecamatan memiliki lebih dari satu baris data pada "
     "tahun yang sama di file sumber, jumlah kasus dihitung sebagai total "
     "agregat dari seluruh baris tersebut."
 )
 st.markdown("---")
+with st.sidebar:
+    st.title("🫁 Dashboard TB Paru")
+    st.markdown("---")
 
+    st.info("""
+    Dashboard Analisis Spasial
+    Tuberkulosis (TB) Paru
+    Kota Bandung
+    """)
+
+    st.markdown("---")
+
+    st.success("📍 Data Kecamatan Kota Bandung")
 
 
 
@@ -87,17 +132,36 @@ total_kecamatan_geo = len(geojson_data["features"])
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.metric("Total Kasus TB Paru", int(df_year["jumlah_kasus"].sum()))
+    st.markdown(f"""
+    <div style="background:#0A4D68;padding:20px;border-radius:15px;color:white;text-align:center">
+    <h3>Total Kasus</h3>
+    <h1>{int(df_year['jumlah_kasus'].sum())}</h1>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col2:
-    st.metric("Kecamatan Tercatat", f"{len(df_year)} / {total_kecamatan_geo}")
+    st.markdown(f"""
+    <div style="background:#088395;padding:20px;border-radius:15px;color:white;text-align:center">
+    <h3>Kecamatan</h3>
+    <h1>{len(df_year)}</h1>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col3:
-    st.metric("Kasus Tertinggi", int(df_year["jumlah_kasus"].max()))
+    st.markdown(f"""
+    <div style="background:#05BFDB;padding:20px;border-radius:15px;color:white;text-align:center">
+    <h3>Kasus Tertinggi</h3>
+    <h1>{int(df_year['jumlah_kasus'].max())}</h1>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col4:
-    kec_tertinggi = df_year.loc[df_year["jumlah_kasus"].idxmax(), "kecamatan"]
-    st.metric("Kecamatan Tertinggi", kec_tertinggi)
+    st.markdown(f"""
+    <div style="background:#00A896;padding:20px;border-radius:15px;color:white;text-align:center">
+    <h3>Kecamatan Tertinggi</h3>
+    <h4>{kec_tertinggi}</h4>
+    </div>
+    """, unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -124,7 +188,7 @@ with col_kiri:
         data=df_year,
         columns=["kecamatan", "jumlah_kasus"],
         key_on="feature.properties.district",
-        fill_color="YlOrRd",
+        fill_color="PuBuGn",
         fill_opacity=0.8,
         line_opacity=0.8,
         line_color="black",
@@ -138,12 +202,12 @@ with col_kiri:
         style_function=lambda x: {
             "fillOpacity": 0,
             "weight": 1.5,
-            "color": "#333333"
+            "color": "#0A4D68"
         },
         highlight_function=lambda x: {
             "fillOpacity": 0.25,
             "weight": 3,
-            "color": "#FF4444"
+            "color": "#00B4D8"
         },
         tooltip=folium.GeoJsonTooltip(
             fields=["district", "jumlah_kasus"],
@@ -157,7 +221,7 @@ with col_kiri:
             labels=True,
             style=(
                 "background-color: white;"
-                "color: #333333;"
+                "color: #0A4D68;"
                 "font-family: Arial;"
                 "font-size: 14px;"
                 "padding: 10px;"
@@ -224,7 +288,7 @@ with col_kanan:
         x="jumlah_kasus",
         y="kecamatan",
         color="jumlah_kasus",
-        color_continuous_scale="YlOrRd",
+        color_continuous_scale="Viridis",
         text="jumlah_kasus",
         orientation="h"
     )
@@ -252,7 +316,7 @@ fig_top = px.bar(
     y="jumlah_kasus",
     text="jumlah_kasus",
     color="jumlah_kasus",
-    color_continuous_scale="Reds"
+    color_continuous_scale="Plasma"
 )
 fig_top.update_traces(textposition="outside")
 fig_top.update_layout(
