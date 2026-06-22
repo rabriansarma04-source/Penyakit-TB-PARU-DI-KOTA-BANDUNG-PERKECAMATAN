@@ -422,9 +422,9 @@ st.markdown(
             Open Data Kota Bandung
         </a>
         <br>
-        👨‍💻 <b>Kontributor:</b> Achmad Muhajir
+        👨‍💻 <b>Kontributor:</b> Rabrian Sarma
         &nbsp;|&nbsp;
-        <a href="https://github.com/Dayyrenn" target="_blank">🔗 My GitHub</a>
+        <a href="https://github.com/rabriansarma04-source" target="_blank">🔗 My GitHub</a>
     </div>
     """,
     unsafe_allow_html=True
