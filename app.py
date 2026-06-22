@@ -154,12 +154,16 @@ with col3:
     <h1>{int(df_year['jumlah_kasus'].max())}</h1>
     </div>
     """, unsafe_allow_html=True)
-
 with col4:
     st.markdown(f"""
-    <div style="background:#00A896;padding:20px;border-radius:15px;color:white;text-align:center">
-    <h3>Kecamatan Tertinggi</h3>
-    <h4>{kec_tertinggi}</h4>
+    <div style="
+        background:#00A896;
+        padding:20px;
+        border-radius:15px;
+        color:white;
+        text-align:center">
+        <h3>Kecamatan Tertinggi</h3>
+        <h4>{df_year.loc[df_year['jumlah_kasus'].idxmax(),'kecamatan']}</h4>
     </div>
     """, unsafe_allow_html=True)
 
