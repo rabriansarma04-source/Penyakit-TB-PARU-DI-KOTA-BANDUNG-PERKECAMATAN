@@ -3,6 +3,7 @@ import pandas as pd
 import folium
 import json
 import re
+import branca.colormap as bcm
 
 from streamlit_folium import st_folium
 import plotly.express as px
@@ -12,6 +13,10 @@ st.set_page_config(
     page_icon="🫁",
     layout="wide"
 )
+
+# Palet warna utama dashboard — dipakai konsisten di peta & semua grafik
+BRAND_COLORS = ["#CDEEF7", "#05BFDB", "#088395", "#0A4D68"]
+
 st.markdown("""
 <style>
 .main {
@@ -187,26 +192,24 @@ with col_kiri:
         tiles="CartoDB positron"
     )
 
-    folium.Choropleth(
-        geo_data=geojson_data,
-        data=df_year,
-        columns=["kecamatan", "jumlah_kasus"],
-        key_on="feature.properties.district",
-        fill_color="PuBuGn",
-        fill_opacity=0.8,
-        line_opacity=0.8,
-        line_color="black",
-        legend_name=f"Jumlah Kasus TB Paru {selected_year}",
-        nan_fill_color="lightgray",
-        highlight=True
-    ).add_to(m)
+    jumlah_min = int(df_year["jumlah_kasus"].min())
+    jumlah_max_for_map = int(df_year["jumlah_kasus"].max())
+
+    colormap = bcm.LinearColormap(
+        colors=BRAND_COLORS,
+        vmin=jumlah_min,
+        vmax=jumlah_max_for_map
+    )
+    colormap.caption = f"Jumlah Kasus TB Paru {selected_year}"
 
     folium.GeoJson(
         geojson_data,
-        style_function=lambda x: {
-            "fillOpacity": 0,
-            "weight": 1.5,
-            "color": "#0A4D68"
+        style_function=lambda feature: {
+            "fillColor": colormap(feature["properties"]["jumlah_kasus"])
+            if feature["properties"]["jumlah_kasus"] > 0 else "lightgray",
+            "color": "black",
+            "weight": 0.8,
+            "fillOpacity": 0.8,
         },
         highlight_function=lambda x: {
             "fillOpacity": 0.25,
@@ -235,6 +238,8 @@ with col_kiri:
         )
     ).add_to(m)
 
+    colormap.add_to(m)
+
     map_data = st_folium(
         m,
         width=900,
@@ -251,9 +256,9 @@ with col_kiri:
         f"""
         <div style="font-size:13px; margin-top:8px; line-height:1.8;">
             <b>Informasi:</b><br>
-            🟡 <b>Kuning</b> — Kasus rendah (1 – {q1} kasus)<br>
-            🟠 <b>Oranye</b> — Kasus sedang ({q1+1} – {q3} kasus)<br>
-            🔴 <b>Merah</b> — Kasus tinggi ({q3+1} – {jumlah_max} kasus)<br>
+            🟦 <span style="color:#05BFDB;">●</span> <b>Muda</b> — Kasus rendah (1 – {q1} kasus)<br>
+            🟦 <span style="color:#088395;">●</span> <b>Sedang</b> — Kasus menengah ({q1+1} – {q3} kasus)<br>
+            🟦 <span style="color:#0A4D68;">●</span> <b>Tua</b> — Kasus tinggi ({q3+1} – {jumlah_max} kasus)<br>
         </div>
         """,
         unsafe_allow_html=True
@@ -292,7 +297,7 @@ with col_kanan:
         x="jumlah_kasus",
         y="kecamatan",
         color="jumlah_kasus",
-        color_continuous_scale="Viridis",
+        color_continuous_scale=BRAND_COLORS,
         text="jumlah_kasus",
         orientation="h"
     )
@@ -320,7 +325,7 @@ fig_top = px.bar(
     y="jumlah_kasus",
     text="jumlah_kasus",
     color="jumlah_kasus",
-    color_continuous_scale="Plasma"
+    color_continuous_scale=BRAND_COLORS
 )
 fig_top.update_traces(textposition="outside")
 fig_top.update_layout(
